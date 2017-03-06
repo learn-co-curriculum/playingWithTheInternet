@@ -8,54 +8,44 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UITableViewController {
+    
+    let store = CatDataStore.sharedInstance
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
         
-        getMeSomeCatGifs()
+      
+      
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        store.getMeSomeCatGifs {
+            self.tableView.reloadData()
+        }
+       
+    }
+    
+   
+    
+    
+        
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "catCell", for: indexPath)
+        let cat = store.catgifs[indexPath.row]
+        cell.textLabel?.text = cat.url
+        
+        
+        return cell
     }
     
     
-    func getMeSomeCatGifs() {
-        let urlString = "https://www.reddit.com/r/catgifs/hot.json?limit=100"
-        if let url = URL(string: urlString) {
-            let session = URLSession.shared
-            let dataTask = session.dataTask(with: url, completionHandler: { (data, response, error) in
-                
-                if let unwrappedData = data {
-                   // print(unwrappedData)
-                    
-                    
-                    do {
-                        let responseJSON = try JSONSerialization.jsonObject(with: unwrappedData, options: []) as? [String: Any] ?? [:]
-                        
-                        let dataJSON = responseJSON["data"] as? [String: Any] ?? [:]
-            
-                        let childrenJSON = dataJSON["children"] as? [[String: Any]] ?? [[:]]
-                        
-                        for child in childrenJSON {
-                            guard let innerDataJSON = child["data"] as? [String: Any] else { continue }
-                            if let url = innerDataJSON["url"] as? String {
-                                print(url)
-                            }
-                        }
- 
-                    } catch {
-                        
-                    }
- 
-                    
-                }
-                
-                
-            })
-            
-            dataTask.resume()
-            
-            
-        }
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        
+        return store.catgifs.count
     }
 
    
